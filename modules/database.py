@@ -1,79 +1,56 @@
 import sqlite3
 
-DB_NAME = "services.db"
-
-# -----------------------------------
-# Initialize database
-# -----------------------------------
 def init_db():
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("""
+    conn = sqlite3.connect("services.db")
+    cursor = conn.cursor()
+    cursor.execute("""
         CREATE TABLE IF NOT EXISTS services (
             flight TEXT,
             reg TEXT,
             date TEXT,
             service TEXT,
             start TEXT,
-            end TEXT,
-            PRIMARY KEY (flight, reg, date, service)
+            end TEXT
         )
     """)
     conn.commit()
     conn.close()
 
-# -----------------------------------
-# Save service (Start / End)
-# -----------------------------------
-def save_service(flight, reg, date, service, time, mode):
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-
-    # Check if record exists
-    c.execute("SELECT * FROM services WHERE flight=? AND reg=? AND date=? AND service=?",
-              (flight, reg, date, service))
-    row = c.fetchone()
-
-    if row:
-        if mode == "start":
-            c.execute("UPDATE services SET start=? WHERE flight=? AND reg=? AND date=? AND service=?",
-                      (time, flight, reg, date, service))
-        elif mode == "end":
-            c.execute("UPDATE services SET end=? WHERE flight=? AND reg=? AND date=? AND service=?",
-                      (time, flight, reg, date, service))
-    else:
-        if mode == "start":
-            c.execute("INSERT INTO services (flight, reg, date, service, start, end) VALUES (?, ?, ?, ?, ?, ?)",
-                      (flight, reg, date, service, time, None))
-        elif mode == "end":
-            c.execute("INSERT INTO services (flight, reg, date, service, start, end) VALUES (?, ?, ?, ?, ?, ?)",
-                      (flight, reg, date, service, None, time))
-
+def save_service(flight, reg, date, service, time, action):
+    conn = sqlite3.connect("services.db")
+    cursor = conn.cursor()
+    if action == "start":
+        cursor.execute("UPDATE services SET start=? WHERE flight=? AND date=? AND service=?",
+                       (time, flight, date, service))
+    elif action == "end":
+        cursor.execute("UPDATE services SET end=? WHERE flight=? AND date=? AND service=?",
+                       (time, flight, date, service))
     conn.commit()
     conn.close()
 
-# -----------------------------------
-# Load services for one flight/date
-# -----------------------------------
 def load_services(flight, date):
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT service, start, end FROM services WHERE flight=? AND date=?", (flight, date))
-    rows = c.fetchall()
+    conn = sqlite3.connect("services.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT service, start, end FROM services WHERE flight=? AND date=?", (flight, date))
+    rows = cursor.fetchall()
     conn.close()
-
     data = {}
     for service, start, end in rows:
         data[service] = {"start": start, "end": end}
     return data
 
-# -----------------------------------
-# Load archive (all records)
-# -----------------------------------
 def load_archive():
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT flight, reg, date, service, start, end FROM services ORDER BY date DESC")
-    rows = c.fetchall()
+    conn = sqlite3.connect("services.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT flight, reg, date, service, start, end FROM services")
+    rows = cursor.fetchall()
     conn.close()
     return rows
+
+# ✅ الدالة الجديدة لمسح كل الخدمات
+def clear_services():
+    conn = sqlite3.connect("services.db")
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM services")
+    conn.commit()
+    conn.close()
