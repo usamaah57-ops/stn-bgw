@@ -1,34 +1,37 @@
 import sqlite3
-import datetime
+import os
+import json
 
-DB_NAME = "flight_data.db"
+DB_PATH = "database.db"
 
-
-# -----------------------------
-# Database initialization
-# -----------------------------
+# -------------------------------------------------
+# Create database and tables if not exist
+# -------------------------------------------------
 def init_db():
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
 
-    # Table for current flight services
+    # Services table
     c.execute("""
         CREATE TABLE IF NOT EXISTS services (
-            key TEXT PRIMARY KEY,
-            time TEXT,
-            staff TEXT
-        )
-    """)
-
-    # Table for archived flights
-    c.execute("""
-        CREATE TABLE IF NOT EXISTS archive (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             flight TEXT,
             reg TEXT,
             date TEXT,
-            key TEXT,
+            service TEXT,
             time TEXT,
             staff TEXT
+        )
+    """)
+
+    # Documents table
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS documents (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            flight TEXT,
+            date TEXT,
+            service TEXT,
+            filename TEXT
         )
     """)
 
@@ -36,121 +39,97 @@ def init_db():
     conn.close()
 
 
-# Initialize DB on import
-init_db()
-
-
-# -----------------------------
-# Services table operations
-# -----------------------------
-def save_service(key, time, staff):
-    conn = sqlite3.connect(DB_NAME)
+# -------------------------------------------------
+# Save service
+# -------------------------------------------------
+def save_service(flight, reg, date, service, time, staff):
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
 
-    c.execute(
-        """
-        INSERT OR REPLACE INTO services (key, time, staff)
-        VALUES (?, ?, ?)
-        """,
-        (key, time, staff)
-    )
+    # Delete old record for same service
+    c.execute("""
+        DELETE FROM services 
+        WHERE flight=? AND date=? AND service=?
+    """, (flight, date, service))
+
+    # Insert new record
+    c.execute("""
+        INSERT INTO services (flight, reg, date, service, time, staff)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (flight, reg, date, service, time, staff))
 
     conn.commit()
     conn.close()
 
 
-def load_services():
-    conn = sqlite3.connect(DB_NAME)
+# -------------------------------------------------
+# Load services
+# -------------------------------------------------
+def load_services(flight, date):
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
 
-    c.execute("SELECT key, time, staff FROM services")
+    c.execute("""
+        SELECT service, time, staff 
+        FROM services 
+        WHERE flight=? AND date=?
+    """, (flight, date))
+
     rows = c.fetchall()
-
     conn.close()
 
-    services = {}
-    for key, time, staff in rows:
-        services[key] = {
-            "time": time,
-            "staff": staff
-        }
+    data = {}
+    for service, time, staff in rows:
+        data[service] = {"time": time, "staff": staff}
 
-    return services
+    return data
 
 
-def clear_services():
-    conn = sqlite3.connect(DB_NAME)
+# -------------------------------------------------
+# Save document
+# -------------------------------------------------
+def save_document(flight, date, service, filename):
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
 
-    c.execute("DELETE FROM services")
+    # Delete old document for same service
+    c.execute("""
+        DELETE FROM documents 
+        WHERE flight=? AND date=? AND service=?
+    """, (flight, date, service))
+
+    # Insert new document
+    c.execute("""
+        INSERT INTO documents (flight, date, service, filename)
+        VALUES (?, ?, ?, ?)
+    """, (flight, date, service, filename))
 
     conn.commit()
     conn.close()
 
 
-# -----------------------------
-# Archive table operations
-# -----------------------------
-def archive_services(flight, reg):
-    """
-    Archive current services for a given flight/registration.
-    Returns:
-        True  -> archived successfully
-        False -> already archived today
-    """
-    conn = sqlite3.connect(DB_NAME)
+# -------------------------------------------------
+# Load documents
+# -------------------------------------------------
+def load_documents(flight, date):
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
 
-    # Use today's date
-    today = datetime.date.today().strftime("%d/%m/%Y")
+    c.execute("""
+        SELECT service, filename 
+        FROM documents 
+        WHERE flight=? AND date=?
+    """, (flight, date))
 
-    # Check if this flight is already archived today
-    c.execute(
-        """
-        SELECT 1 FROM archive
-        WHERE flight = ? AND reg = ? AND date = ?
-        LIMIT 1
-        """,
-        (flight, reg, today)
-    )
-    exists = c.fetchone()
-
-    if exists:
-        conn.close()
-        return False
-
-    # Load current services
-    c2 = conn.cursor()
-    c2.execute("SELECT key, time, staff FROM services")
-    services = c2.fetchall()
-
-    # Insert into archive
-    for key, time, staff in services:
-        c.execute(
-            """
-            INSERT INTO archive (flight, reg, date, key, time, staff)
-            VALUES (?, ?, ?, ?, ?, ?)
-            """,
-            (flight, reg, today, key, time, staff)
-        )
-
-    conn.commit()
-    conn.close()
-    return True
-
-
-def load_archive():
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-
-    c.execute(
-        """
-        SELECT flight, reg, date, key, time, staff
-        FROM archive
-        ORDER BY date DESC
-        """
-    )
     rows = c.fetchall()
-
     conn.close()
-    return rows
+
+    data = {}
+    for service, filename in rows:
+        data[service] = filename
+
+    return data
