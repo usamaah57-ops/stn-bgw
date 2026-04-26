@@ -20,7 +20,7 @@ st.set_page_config(page_title="EgyptAir - Baghdad Station Services", layout="wid
 page_bg_img = f"""
 <style>
 [data-testid="stAppViewContainer"] {{
-background-image: url("images/egyptair_bg.jpg");
+background-image: url("assets/egyptair_bg.jpg");
 background-size: cover;
 background-repeat: no-repeat;
 background-attachment: fixed;
