@@ -103,15 +103,29 @@ for i, (service, icon) in enumerate(services_list):
         st.write(f"Start: {start_time if start_time else '--'}")
         st.write(f"End: {end_time if end_time else '--'}")
 
-        if st.button(f"Start {service}", key=f"start_{service}"):
-            t = datetime.datetime.now(baghdad_offset).strftime("%H:%M:%S")
-            save_service(flight, reg, date, service, t, "start")
-            st.success(f"Start time recorded for {service} at {t} Baghdad time")
+        # ✅ تخصيص الأزرار
+        if service == "FIRST_PAX":
+            if st.button("Start", key=f"start_{service}"):
+                t = datetime.datetime.now(baghdad_offset).strftime("%H:%M:%S")
+                save_service(flight, reg, date, service, t, "start")
+                st.success(f"Start recorded for {service} at {t} Baghdad time")
 
-        if st.button(f"End {service}", key=f"end_{service}"):
-            t = datetime.datetime.now(baghdad_offset).strftime("%H:%M:%S")
-            save_service(flight, reg, date, service, t, "end")
-            st.success(f"End time recorded for {service} at {t} Baghdad time")
+        elif service == "LAST_PAX":
+            if st.button("End", key=f"end_{service}"):
+                t = datetime.datetime.now(baghdad_offset).strftime("%H:%M:%S")
+                save_service(flight, reg, date, service, t, "end")
+                st.success(f"End recorded for {service} at {t} Baghdad time")
+
+        else:
+            if st.button("Start", key=f"start_{service}"):
+                t = datetime.datetime.now(baghdad_offset).strftime("%H:%M:%S")
+                save_service(flight, reg, date, service, t, "start")
+                st.success(f"Start recorded for {service} at {t} Baghdad time")
+
+            if st.button("End", key=f"end_{service}"):
+                t = datetime.datetime.now(baghdad_offset).strftime("%H:%M:%S")
+                save_service(flight, reg, date, service, t, "end")
+                st.success(f"End recorded for {service} at {t} Baghdad time")
 
 st.markdown("<hr>", unsafe_allow_html=True)
 st.markdown("<p style='text-align:center;color:gray;'>Auto-refresh every 10 seconds</p>", unsafe_allow_html=True)
