@@ -18,26 +18,15 @@ init_db()
 page_bg_img = f"""
 <style>
 [data-testid="stAppViewContainer"] {{
-background-image: url("https://imgur.com/a/KHgxquy");
+background-image: url("https://i.imgur.com/KEKzOCL.jpeg");
 background-size: cover;
 background-repeat: no-repeat;
 background-attachment: fixed;
 }}
-
-[data-testid="stHeader"] {{
-background: rgba(0,0,0,0);   /* يجعل الهيدر شفاف */
-}}
-
-[data-testid="stSidebar"] {{
-background: rgba(255,255,255,0.8);  /* خلفية شبه شفافة للـ Sidebar */
-}}
-
-[data-testid="stToolbar"] {{
-right: 2rem;  /* يضبط مكان شريط الأدوات */
-}}
 </style>
 """
 st.markdown(page_bg_img, unsafe_allow_html=True)
+
 
 
 # CSS
