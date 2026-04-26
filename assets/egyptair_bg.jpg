@@ -1,7 +1,7 @@
 page_bg_img = f"""
 <style>
 [data-testid="stAppViewContainer"] {{
-background-image: url("assets/egyptair_bg.jpg");
+background-image: url("https://i.imgur.com/XXXXX.jpg");
 background-size: cover;
 background-repeat: no-repeat;
 background-attachment: fixed;
@@ -9,4 +9,3 @@ background-attachment: fixed;
 </style>
 """
 st.markdown(page_bg_img, unsafe_allow_html=True)
-
