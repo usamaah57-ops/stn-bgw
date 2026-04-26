@@ -1,5 +1,42 @@
+import streamlit as st
+import os
+import datetime
+import sys
+
 # ------------------------------
-# CSS لتلوين حالة الخدمة
+# FIX IMPORT ERROR ON STREAMLIT CLOUD
+# ------------------------------
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
+from modules.database import save_service, load_services
+
+st.set_page_config(page_title="EgyptAir - Baghdad Station Services", layout="wide")
+
+# ------------------------------
+# خلفية مصر للطيران
+# ------------------------------
+page_bg_img = f"""
+<style>
+[data-testid="stAppViewContainer"] {{
+background-image: url("images/egyptair_bg.jpg");
+background-size: cover;
+background-repeat: no-repeat;
+background-attachment: fixed;
+}}
+[data-testid="stHeader"] {{
+background: rgba(0,0,0,0);
+}}
+[data-testid="stSidebar"] {{
+background: rgba(255,255,255,0.85);
+}}
+</style>
+"""
+st.markdown(page_bg_img, unsafe_allow_html=True)
+
+# ------------------------------
+# CSS لتصغير الأيقونات وتلوين الحالات
 # ------------------------------
 st.markdown("""
 <style>
@@ -24,3 +61,96 @@ st.markdown("""
 }
 </style>
 """, unsafe_allow_html=True)
+
+# ------------------------------
+# Header
+# ------------------------------
+st.markdown("<h2 style='text-align:center;color:#003366;'>EgyptAir – Baghdad Station Services</h2>", unsafe_allow_html=True)
+st.markdown("<hr style='border:1px solid #003366;'>", unsafe_allow_html=True)
+
+# Flight info
+col1, col2, col3 = st.columns([1, 1, 1])
+with col1:
+    flight = st.text_input("Flight Number:", value="MS628")
+with col2:
+    reg = st.text_input("Registration:", value="SU-GEH")
+with col3:
+    date = datetime.date.today().strftime("%d/%m/%Y")
+    st.write(f"**Date:** {date}")
+
+# ------------------------------
+# قائمة الخدمات التشغيلية
+# ------------------------------
+services_list = [
+    ("CHOCKS_ON", "🟢"),
+    ("AFT_OPEN", "🔓"),
+    ("FWD_OPEN", "🔓"),
+    ("CLEANING_START", "🧹"),
+    ("FUEL_ARRIVAL", "⛽"),
+    ("FUEL_END", "✅"),
+    ("AFT_CLOSE", "🔒"),
+    ("CLEANING_END", "🧼"),
+    ("FIRST_PAX", "👥"),
+    ("PUSHBACK_TRUCK", "🚛"),
+    ("LOADSHEET", "📄"),
+    ("FWD_CLOSE", "🔒"),
+    ("LAST_PAX", "👤"),
+    ("CLOSE_DOOR", "🚪"),
+    ("PUSH_BACK", "🛫")
+]
+
+services_data = load_services(flight, date)
+
+# ------------------------------
+# عرض الخدمات بشكل Grid منظم
+# ------------------------------
+cols = st.columns(4)
+
+for i, (service, icon) in enumerate(services_list):
+
+    start_time = services_data.get(service, {}).get("start", None)
+    end_time = services_data.get(service, {}).get("end", None)
+
+    # تحديد اللون حسب الحالة
+    if start_time is None and end_time is None:
+        status_class = "status-red"      # لم يبدأ
+    elif start_time is not None and end_time is None:
+        status_class = "status-yellow"   # جاري
+    else:
+        status_class = "status-green"    # مكتمل
+
+    with cols[i % 4]:
+
+        # صندوق الخدمة مع اللون
+        st.markdown(
+            f"<div class='service-box {status_class}'>"
+            f"<span class='service-icon'>{icon}</span> {service}"
+            f"</div>",
+            unsafe_allow_html=True
+        )
+
+        st.write(f"**Start:** {start_time if start_time else '--'}")
+        st.write(f"**End:** {end_time if end_time else '--'}")
+
+        notes_val = services_data.get(service, {}).get("notes", "--")
+        st.write(f"**Notes:** {notes_val}")
+
+        # تسجيل بدء الخدمة
+        if st.button(f"تسجيل بدء {service}", key=f"start_{service}"):
+            t = st.time_input(f"وقت بدء {service}", datetime.datetime.now().time(), key=f"time_start_{service}")
+            n = st.text_area(f"ملاحظات {service}", key=f"notes_start_{service}")
+            save_service(flight, reg, date, service, str(t), n, mode="start")
+            st.success(f"تم تسجيل بدء {service}")
+
+        # تسجيل انتهاء الخدمة
+        if st.button(f"تسجيل انتهاء {service}", key=f"end_{service}"):
+            t = st.time_input(f"وقت انتهاء {service}", datetime.datetime.now().time(), key=f"time_end_{service}")
+            n = st.text_area(f"ملاحظات {service}", key=f"notes_end_{service}")
+            save_service(flight, reg, date, service, str(t), n, mode="end")
+            st.success(f"تم تسجيل انتهاء {service}")
+
+# ------------------------------
+# Auto refresh
+# ------------------------------
+st.markdown("<hr>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center;color:gray;'>تحديث تلقائي كل 10 ثواني</p>", unsafe_allow_html=True)
