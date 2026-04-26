@@ -23,24 +23,27 @@ rows = load_archive()
 if not rows:
     st.warning("Archive is empty.")
 else:
-    # Show table
+    # Show table in Streamlit
     st.table(rows)
 
-    # Generate PDF
+    # Generate PDF with table
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Arial", size=12)
+    pdf.set_font("Arial", size=10)
 
+    # عنوان
     pdf.cell(200, 10, txt="EgyptAir Baghdad Station Archive", ln=True, align="C")
     pdf.ln(10)
 
+    # رأس الجدول
+    pdf.set_font("Arial", 'B', 10)
+    headers = ["Flight", "Reg", "Date", "Service", "Start", "End"]
+    col_widths = [25, 25, 25, 40, 25, 25]
+
+    for i, header in enumerate(headers):
+        pdf.cell(col_widths[i], 10, header, border=1, align="C")
+    pdf.ln()
+
+    # محتوى الجدول مع ألوان
+    pdf.set_font("Arial", size=9)
     for flight, reg, date, service, start, end in rows:
-        pdf.cell(200, 10, txt=f"Flight: {flight} | Reg: {reg} | Date: {date} | Service: {service} | Start: {start} | End: {end}", ln=True)
-
-    # Save PDF to file
-    pdf_file = "archive.pdf"
-    pdf.output(pdf_file)
-
-    # Provide download button
-    with open(pdf_file, "rb") as f:
-        st.download_button("Download Archive PDF", f, file_name="archive.pdf", mime="application/pdf")
