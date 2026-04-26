@@ -1,10 +1,12 @@
 import sqlite3
 
+DB_NAME = "services.db"
+
 # -----------------------------------
 # Initialize database
 # -----------------------------------
 def init_db():
-    conn = sqlite3.connect("services.db")
+    conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("""
         CREATE TABLE IF NOT EXISTS services (
@@ -24,7 +26,7 @@ def init_db():
 # Save service (Start / End)
 # -----------------------------------
 def save_service(flight, reg, date, service, time, mode):
-    conn = sqlite3.connect("services.db")
+    conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
 
     # Check if record exists
@@ -54,7 +56,7 @@ def save_service(flight, reg, date, service, time, mode):
 # Load services for one flight/date
 # -----------------------------------
 def load_services(flight, date):
-    conn = sqlite3.connect("services.db")
+    conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("SELECT service, start, end FROM services WHERE flight=? AND date=?", (flight, date))
     rows = c.fetchall()
@@ -69,7 +71,7 @@ def load_services(flight, date):
 # Load archive (all records)
 # -----------------------------------
 def load_archive():
-    conn = sqlite3.connect("services.db")
+    conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("SELECT flight, reg, date, service, start, end FROM services ORDER BY date DESC")
     rows = c.fetchall()
