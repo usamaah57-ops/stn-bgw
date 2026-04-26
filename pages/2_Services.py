@@ -25,6 +25,12 @@ background-size: cover;
 background-repeat: no-repeat;
 background-attachment: fixed;
 }}
+[data-testid="stHeader"] {{
+background: rgba(0,0,0,0);
+}}
+[data-testid="stSidebar"] {{
+background: rgba(255,255,255,0.85);
+}}
 </style>
 """
 st.markdown(page_bg_img, unsafe_allow_html=True)
@@ -75,23 +81,21 @@ with col3:
     st.write(f"Date: {date}")
 
 # -----------------------------------
-# Services List
+# CLEAN SERVICE LIST (NO DUPLICATES)
 # -----------------------------------
 services_list = [
     ("CHOCKS_ON", "🟢"),
     ("AFT_OPEN", "🔓"),
-    ("FWD_OPEN", "🔓"),
-    ("CLEANING_START", "🧹"),
-    ("FUEL_ARRIVAL", "⛽"),
-    ("FUEL_END", "✅"),
     ("AFT_CLOSE", "🔒"),
-    ("CLEANING_END", "🧼"),
-    ("FIRST_PAX", "👥"),
-    ("PUSHBACK_TRUCK", "🚛"),
-    ("LOADSHEET", "📄"),
+    ("FWD_OPEN", "🔓"),
     ("FWD_CLOSE", "🔒"),
+    ("CLEANING", "🧹"),
+    ("FUEL", "⛽"),
+    ("FIRST_PAX", "👥"),
     ("LAST_PAX", "👤"),
+    ("LOADSHEET", "📄"),
     ("CLOSE_DOOR", "🚪"),
+    ("PUSHBACK_TRUCK", "🚛"),
     ("PUSH_BACK", "🛫")
 ]
 
@@ -125,8 +129,8 @@ for i, (service, icon) in enumerate(services_list):
             unsafe_allow_html=True
         )
 
-        st.write(f"Start: {start_time if start_time else '--'}")
-        st.write(f"End: {end_time if end_time else '--'}")
+        st.write(f"Arrival (Start): {start_time if start_time else '--'}")
+        st.write(f"End Time: {end_time if end_time else '--'}")
 
         notes_val = services_data.get(service, {}).get("notes", "--")
         st.write(f"Notes: {notes_val}")
