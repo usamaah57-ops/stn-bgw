@@ -2,22 +2,19 @@ import streamlit as st
 import os
 import datetime
 import sys
-import pytz   # مكتبة للتعامل مع التوقيت المحلي
 
-# -----------------------------------
-# FIX IMPORT ERROR ON STREAMLIT CLOUD
-# -----------------------------------
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
-from modules.database import save_service, load_services
+from modules.database import save_service, load_services, init_db
 
 st.set_page_config(page_title="EgyptAir - Baghdad Station Services", layout="wide")
 
-# -----------------------------------
+# Initialize DB
+init_db()
+
 # Background Image
-# -----------------------------------
 page_bg_img = f"""
 <style>
 [data-testid="stAppViewContainer"] {{
@@ -26,19 +23,11 @@ background-size: cover;
 background-repeat: no-repeat;
 background-attachment: fixed;
 }}
-[data-testid="stHeader"] {{
-background: rgba(0,0,0,0);
-}}
-[data-testid="stSidebar"] {{
-background: rgba(255,255,255,0.85);
-}}
 </style>
 """
 st.markdown(page_bg_img, unsafe_allow_html=True)
 
-# -----------------------------------
-# CSS for icons + status colors
-# -----------------------------------
+# CSS
 st.markdown("""
 <style>
 .service-box {
@@ -48,30 +37,18 @@ st.markdown("""
     color: black;
     font-weight: bold;
 }
-.status-red {
-    background-color: rgba(255, 0, 0, 0.25);
-}
-.status-yellow {
-    background-color: rgba(255, 255, 0, 0.35);
-}
-.status-green {
-    background-color: rgba(0, 255, 0, 0.25);
-}
-.service-icon {
-    font-size: 22px !important;
-}
+.status-red { background-color: rgba(255, 0, 0, 0.25); }
+.status-yellow { background-color: rgba(255, 255, 0, 0.35); }
+.status-green { background-color: rgba(0, 255, 0, 0.25); }
+.service-icon { font-size: 22px !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# -----------------------------------
 # Header
-# -----------------------------------
 st.markdown("<h2 style='text-align:center;color:#003366;'>EgyptAir – Baghdad Station Services</h2>", unsafe_allow_html=True)
 st.markdown("<hr style='border:1px solid #003366;'>", unsafe_allow_html=True)
 
-# -----------------------------------
 # Flight Info
-# -----------------------------------
 col1, col2, col3 = st.columns([1, 1, 1])
 with col1:
     flight = st.text_input("Flight Number:", value="MS628")
@@ -81,9 +58,7 @@ with col3:
     date = datetime.date.today().strftime("%d/%m/%Y")
     st.write(f"Date: {date}")
 
-# -----------------------------------
-# CLEAN SERVICE LIST (NO DUPLICATES)
-# -----------------------------------
+# Services
 services_list = [
     ("CHOCKS_ON", "🟢"),
     ("AFT_CLOSE", "🔒"),
@@ -100,32 +75,24 @@ services_list = [
 
 services_data = load_services(flight, date)
 
-# -----------------------------------
-# Baghdad timezone
-# -----------------------------------
-baghdad_tz = pytz.timezone("Asia/Baghdad")
+# Baghdad timezone (UTC+3)
+baghdad_offset = datetime.timezone(datetime.timedelta(hours=3))
 
-# -----------------------------------
-# Display Services in Grid Layout
-# -----------------------------------
+# Display
 cols = st.columns(4)
 
 for i, (service, icon) in enumerate(services_list):
-
     start_time = services_data.get(service, {}).get("start", None)
     end_time = services_data.get(service, {}).get("end", None)
 
-    # Determine status color
     if start_time is None and end_time is None:
-        status_class = "status-red"      # Not started
+        status_class = "status-red"
     elif start_time is not None and end_time is None:
-        status_class = "status-yellow"   # In progress
+        status_class = "status-yellow"
     else:
-        status_class = "status-green"    # Completed
+        status_class = "status-green"
 
     with cols[i % 4]:
-
-        # Service header box
         st.markdown(
             f"<div class='service-box {status_class}'>"
             f"<span class='service-icon'>{icon}</span> {service}"
@@ -136,20 +103,15 @@ for i, (service, icon) in enumerate(services_list):
         st.write(f"Start: {start_time if start_time else '--'}")
         st.write(f"End: {end_time if end_time else '--'}")
 
-        # Start button
         if st.button(f"Start {service}", key=f"start_{service}"):
-            t = datetime.datetime.now(baghdad_tz).strftime("%H:%M:%S")
-            save_service(flight, reg, date, service, t, "", "start")
+            t = datetime.datetime.now(baghdad_offset).strftime("%H:%M:%S")
+            save_service(flight, reg, date, service, t, "start")
             st.success(f"Start time recorded for {service} at {t} Baghdad time")
 
-        # End button
         if st.button(f"End {service}", key=f"end_{service}"):
-            t = datetime.datetime.now(baghdad_tz).strftime("%H:%M:%S")
-            save_service(flight, reg, date, service, t, "", "end")
+            t = datetime.datetime.now(baghdad_offset).strftime("%H:%M:%S")
+            save_service(flight, reg, date, service, t, "end")
             st.success(f"End time recorded for {service} at {t} Baghdad time")
 
-# -----------------------------------
-# Auto Refresh
-# -----------------------------------
 st.markdown("<hr>", unsafe_allow_html=True)
 st.markdown("<p style='text-align:center;color:gray;'>Auto-refresh every 10 seconds</p>", unsafe_allow_html=True)
