@@ -18,7 +18,7 @@ init_db()
 page_bg_img = f"""
 <style>
 [data-testid="stAppViewContainer"] {{
-background-image: url("https://i.imgur.com/XXXXX.jpg");
+background-image: url("https://imgur.com/a/KHgxquy");
 background-size: cover;
 background-repeat: no-repeat;
 background-attachment: fixed;
