@@ -48,12 +48,20 @@ st.markdown("""
 st.markdown("<h2 style='text-align:center;color:#003366;'>EgyptAir – Baghdad Station Services</h2>", unsafe_allow_html=True)
 st.markdown("<hr style='border:1px solid #003366;'>", unsafe_allow_html=True)
 
+# زر إدخال رحلة جديدة
+if st.button("➕ Add New Flight"):
+    st.session_state["flight"] = ""
+    st.session_state["reg"] = ""
+    st.experimental_rerun()
+
 # Flight Info
 col1, col2, col3 = st.columns([1, 1, 1])
 with col1:
-    flight = st.text_input("Flight Number:", value="MS628")
+    flight = st.text_input("Flight Number:", value=st.session_state.get("flight", "MS628"))
+    st.session_state["flight"] = flight
 with col2:
-    reg = st.text_input("Registration:", value="SU-GEH")
+    reg = st.text_input("Registration:", value=st.session_state.get("reg", "SU-GEH"))
+    st.session_state["reg"] = reg
 with col3:
     date = datetime.date.today().strftime("%d/%m/%Y")
     st.write(f"Date: {date}")
@@ -105,27 +113,27 @@ for i, (service, icon) in enumerate(services_list):
 
         # ✅ تخصيص الأزرار مع منع التكرار
         if service == "FIRST_PAX":
-            if not start_time:   # يظهر الزر فقط إذا لم يتم تسجيل Start
+            if not start_time:
                 if st.button("Start", key=f"start_{service}"):
                     t = datetime.datetime.now(baghdad_offset).strftime("%H:%M:%S")
                     save_service(flight, reg, date, service, t, "start")
                     st.success(f"Start recorded for {service} at {t} Baghdad time")
 
         elif service == "LAST_PAX":
-            if not end_time:   # يظهر الزر فقط إذا لم يتم تسجيل End
+            if not end_time:
                 if st.button("End", key=f"end_{service}"):
                     t = datetime.datetime.now(baghdad_offset).strftime("%H:%M:%S")
                     save_service(flight, reg, date, service, t, "end")
                     st.success(f"End recorded for {service} at {t} Baghdad time")
 
         else:
-            if not start_time:   # زر Start يظهر مرة واحدة فقط
+            if not start_time:
                 if st.button("Start", key=f"start_{service}"):
                     t = datetime.datetime.now(baghdad_offset).strftime("%H:%M:%S")
                     save_service(flight, reg, date, service, t, "start")
                     st.success(f"Start recorded for {service} at {t} Baghdad time")
 
-            if not end_time:   # زر End يظهر مرة واحدة فقط
+            if not end_time:
                 if st.button("End", key=f"end_{service}"):
                     t = datetime.datetime.now(baghdad_offset).strftime("%H:%M:%S")
                     save_service(flight, reg, date, service, t, "end")
