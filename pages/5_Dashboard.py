@@ -1,53 +1,52 @@
 import streamlit as st
-from modules.database import load_services
-from modules.alerts import check_alerts
-from modules.tracking import get_aircraft_position
+import os
+import sys
+import datetime
 
-st.set_page_config(page_title="Dashboard", page_icon="📊")
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
 
-st.title("📊 Operations Dashboard")
-st.markdown("---")
+from modules.database import load_services, init_db
 
-# Load services
-services = load_services()
+st.set_page_config(page_title="Operations Dashboard", layout="wide")
 
-# Alerts section
-st.subheader("⚠️ Operational Alerts")
-alerts = check_alerts(services)
+# تأكد أن قاعدة البيانات موجودة
+init_db()
 
-if alerts:
-    for a in alerts:
-        st.warning(a)
+st.markdown("<h2 style='text-align:center;color:#003366;'>Operations Dashboard – EgyptAir Baghdad Station</h2>", unsafe_allow_html=True)
+st.markdown("<hr>", unsafe_allow_html=True)
+
+# اختيار الرحلة والتاريخ
+col1, col2 = st.columns([1, 1])
+with col1:
+    flight = st.text_input("Flight Number:", value="MS628")
+with col2:
+    date = datetime.date.today().strftime("%d/%m/%Y")
+
+# تحميل البيانات
+services = load_services(flight, date)
+
+if not services:
+    st.warning("No services recorded for this flight/date.")
 else:
-    st.success("All required services are completed.")
+    st.success(f"Showing services for Flight {flight} on {date}")
 
-st.markdown("---")
+    # عرض جدول الخدمات
+    table_data = []
+    for service, times in services.items():
+        table_data.append({
+            "Service": service,
+            "Start": times.get("start", "--"),
+            "End": times.get("end", "--")
+        })
+    st.table(table_data)
 
-# Aircraft tracking
-st.subheader("✈️ Aircraft Live Tracking")
+    # إحصائيات مبسطة
+    total_services = len(services)
+    completed = sum(1 for s in services.values() if s.get("start") and s.get("end"))
+    in_progress = sum(1 for s in services.values() if s.get("start") and not s.get("end"))
+    not_started = sum(1 for s in services.values() if not s.get("start") and not s.get("end"))
 
-icao = st.text_input("Enter Aircraft ICAO (hex code)", placeholder="e.g., 0102A3")
-
-if st.button("Track Aircraft"):
-    if not icao:
-        st.error("Please enter an ICAO code.")
-    else:
-        data = get_aircraft_position(icao)
-
-        if not data or not data.get("states"):
-            st.warning("No live data found for this aircraft.")
-        else:
-            state = data["states"][0]
-            callsign = state[1]
-            altitude = state[13]
-            velocity = state[9]
-            lat = state[6]
-            lon = state[5]
-
-            st.success("Aircraft data retrieved successfully.")
-
-            st.write(f"**Callsign:** {callsign}")
-            st.write(f"**Altitude:** {altitude} ft")
-            st.write(f"**Speed:** {velocity} m/s")
-            st.write(f"**Latitude:** {lat}")
-            st.write(f"**Longitude:** {lon}")
+    st.markdown("### Service Status Summary")
+    col
