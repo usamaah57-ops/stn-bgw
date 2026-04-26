@@ -25,12 +25,6 @@ background-size: cover;
 background-repeat: no-repeat;
 background-attachment: fixed;
 }}
-[data-testid="stHeader"] {{
-background: rgba(0,0,0,0);
-}}
-[data-testid="stSidebar"] {{
-background: rgba(255,255,255,0.85);
-}}
 </style>
 """
 st.markdown(page_bg_img, unsafe_allow_html=True)
