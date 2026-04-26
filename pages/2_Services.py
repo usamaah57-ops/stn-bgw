@@ -3,9 +3,9 @@ import os
 import datetime
 import sys
 
-# ------------------------------
+# -----------------------------------
 # FIX IMPORT ERROR ON STREAMLIT CLOUD
-# ------------------------------
+# -----------------------------------
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
@@ -14,9 +14,9 @@ from modules.database import save_service, load_services
 
 st.set_page_config(page_title="EgyptAir - Baghdad Station Services", layout="wide")
 
-# ------------------------------
-# خلفية مصر للطيران
-# ------------------------------
+# -----------------------------------
+# Background Image
+# -----------------------------------
 page_bg_img = f"""
 <style>
 [data-testid="stAppViewContainer"] {{
@@ -35,9 +35,9 @@ background: rgba(255,255,255,0.85);
 """
 st.markdown(page_bg_img, unsafe_allow_html=True)
 
-# ------------------------------
-# CSS لتصغير الأيقونات وتلوين الحالات
-# ------------------------------
+# -----------------------------------
+# CSS for icons + status colors
+# -----------------------------------
 st.markdown("""
 <style>
 .service-box {
@@ -62,13 +62,15 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ------------------------------
+# -----------------------------------
 # Header
-# ------------------------------
+# -----------------------------------
 st.markdown("<h2 style='text-align:center;color:#003366;'>EgyptAir – Baghdad Station Services</h2>", unsafe_allow_html=True)
 st.markdown("<hr style='border:1px solid #003366;'>", unsafe_allow_html=True)
 
-# Flight info
+# -----------------------------------
+# Flight Info
+# -----------------------------------
 col1, col2, col3 = st.columns([1, 1, 1])
 with col1:
     flight = st.text_input("Flight Number:", value="MS628")
@@ -76,11 +78,11 @@ with col2:
     reg = st.text_input("Registration:", value="SU-GEH")
 with col3:
     date = datetime.date.today().strftime("%d/%m/%Y")
-    st.write(f"**Date:** {date}")
+    st.write(f"Date: {date}")
 
-# ------------------------------
-# قائمة الخدمات التشغيلية
-# ------------------------------
+# -----------------------------------
+# Services List
+# -----------------------------------
 services_list = [
     ("CHOCKS_ON", "🟢"),
     ("AFT_OPEN", "🔓"),
@@ -101,9 +103,9 @@ services_list = [
 
 services_data = load_services(flight, date)
 
-# ------------------------------
-# عرض الخدمات بشكل Grid منظم
-# ------------------------------
+# -----------------------------------
+# Display Services in Grid Layout
+# -----------------------------------
 cols = st.columns(4)
 
 for i, (service, icon) in enumerate(services_list):
@@ -111,17 +113,17 @@ for i, (service, icon) in enumerate(services_list):
     start_time = services_data.get(service, {}).get("start", None)
     end_time = services_data.get(service, {}).get("end", None)
 
-    # تحديد اللون حسب الحالة
+    # Determine status color
     if start_time is None and end_time is None:
-        status_class = "status-red"      # لم يبدأ
+        status_class = "status-red"      # Not started
     elif start_time is not None and end_time is None:
-        status_class = "status-yellow"   # جاري
+        status_class = "status-yellow"   # In progress
     else:
-        status_class = "status-green"    # مكتمل
+        status_class = "status-green"    # Completed
 
     with cols[i % 4]:
 
-        # صندوق الخدمة مع اللون
+        # Service header box
         st.markdown(
             f"<div class='service-box {status_class}'>"
             f"<span class='service-icon'>{icon}</span> {service}"
@@ -129,28 +131,28 @@ for i, (service, icon) in enumerate(services_list):
             unsafe_allow_html=True
         )
 
-        st.write(f"**Start:** {start_time if start_time else '--'}")
-        st.write(f"**End:** {end_time if end_time else '--'}")
+        st.write(f"Start: {start_time if start_time else '--'}")
+        st.write(f"End: {end_time if end_time else '--'}")
 
         notes_val = services_data.get(service, {}).get("notes", "--")
-        st.write(f"**Notes:** {notes_val}")
+        st.write(f"Notes: {notes_val}")
 
-        # تسجيل بدء الخدمة
-        if st.button(f"تسجيل بدء {service}", key=f"start_{service}"):
-            t = st.time_input(f"وقت بدء {service}", datetime.datetime.now().time(), key=f"time_start_{service}")
-            n = st.text_area(f"ملاحظات {service}", key=f"notes_start_{service}")
+        # Start button
+        if st.button(f"Record Start {service}", key=f"start_{service}"):
+            t = st.time_input(f"Start Time ({service})", datetime.datetime.now().time(), key=f"time_start_{service}")
+            n = st.text_area(f"Notes ({service})", key=f"notes_start_{service}")
             save_service(flight, reg, date, service, str(t), n, mode="start")
-            st.success(f"تم تسجيل بدء {service}")
+            st.success(f"Start time recorded for {service}")
 
-        # تسجيل انتهاء الخدمة
-        if st.button(f"تسجيل انتهاء {service}", key=f"end_{service}"):
-            t = st.time_input(f"وقت انتهاء {service}", datetime.datetime.now().time(), key=f"time_end_{service}")
-            n = st.text_area(f"ملاحظات {service}", key=f"notes_end_{service}")
+        # End button
+        if st.button(f"Record End {service}", key=f"end_{service}"):
+            t = st.time_input(f"End Time ({service})", datetime.datetime.now().time(), key=f"time_end_{service}")
+            n = st.text_area(f"Notes ({service})", key=f"notes_end_{service}")
             save_service(flight, reg, date, service, str(t), n, mode="end")
-            st.success(f"تم تسجيل انتهاء {service}")
+            st.success(f"End time recorded for {service}")
 
-# ------------------------------
-# Auto refresh
-# ------------------------------
+# -----------------------------------
+# Auto Refresh
+# -----------------------------------
 st.markdown("<hr>", unsafe_allow_html=True)
-st.markdown("<p style='text-align:center;color:gray;'>تحديث تلقائي كل 10 ثواني</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center;color:gray;'>Auto-refresh every 10 seconds</p>", unsafe_allow_html=True)
