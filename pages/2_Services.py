@@ -35,19 +35,23 @@ folder_name = f"uploads/{date.replace('/', '-')}-{flight}"
 os.makedirs(folder_name, exist_ok=True)
 
 # -----------------------------
-# Services list
+# Services lists
 # -----------------------------
+# الخدمات العادية (وقت + موظف + ملاحظات)
 services_list = [
     ("Fuel", "🔥"),
-    ("Catering", "🍱"),
     ("Cleaning", "🧹"),
-    ("Boarding", "👥"),
+    ("Boarding", "👥")
+]
+
+# الخدمات الخاصة (أيقونات + تصوير بالكاميرا)
+special_services = [
     ("Loadsheet", "📄"),
-    ("GD", "📋"),
-    ("Flight Report", "🛫"),
     ("Load Instruction", "📦"),
     ("Fuel Doc", "⛽"),
-    ("Fuel Supply Order", "🧾")
+    ("Fuel Receipt Order", "🧾"),
+    ("Flight Plan Computerized", "🖥️"),
+    ("Flight Report", "🛫")
 ]
 
 # Load existing data
@@ -58,43 +62,48 @@ docs_data = load_documents(flight, date)
 # Layout
 # -----------------------------
 cols = st.columns(5)
+
+# الخدمات العادية
 for i, (service, icon) in enumerate(services_list):
     with cols[i % 5]:
         st.markdown(f"### {icon} {service}")
         time_val = services_data.get(service, {}).get("time", "--")
         staff_val = services_data.get(service, {}).get("staff", "--")
+        notes_val = services_data.get(service, {}).get("notes", "--") if "notes" in services_data.get(service, {}) else "--"
+
         st.write(f"**Time:** {time_val}")
         st.write(f"**Staff:** {staff_val}")
+        st.write(f"**Notes:** {notes_val}")
 
-        # Register time
         if st.button(f"تسجيل وقت {service}", key=f"log_{service}"):
             time_input = st.time_input(f"وقت الخدمة ({service})", datetime.datetime.now().time(), key=f"time_{service}")
             staff_input = st.text_input(f"اسم الموظف ({service})", key=f"staff_{service}")
+            notes_input = st.text_area(f"ملاحظات ({service})", key=f"notes_{service}")
             if st.button(f"حفظ {service}", key=f"save_{service}"):
-                save_service(flight, reg, date, service, str(time_input), staff_input)
+                # حفظ الملاحظات مع الخدمة
+                save_service(flight, reg, date, service, str(time_input), staff_input + " | Notes: " + notes_input)
                 st.success(f"تم تسجيل {service} بنجاح")
 
-        # Edit time
         if st.button(f"تعديل {service}", key=f"edit_{service}"):
             new_time = st.time_input(f"تعديل الوقت ({service})", datetime.datetime.now().time(), key=f"edit_time_{service}")
             new_staff = st.text_input(f"تعديل الموظف ({service})", key=f"edit_staff_{service}")
+            new_notes = st.text_area(f"تعديل الملاحظات ({service})", key=f"edit_notes_{service}")
             if st.button(f"تأكيد التعديل {service}", key=f"confirm_edit_{service}"):
-                save_service(flight, reg, date, service, str(new_time), new_staff)
+                save_service(flight, reg, date, service, str(new_time), new_staff + " | Notes: " + new_notes)
                 st.success(f"تم تعديل {service}")
 
-        # Upload document
-        uploaded_file = st.file_uploader(f"رفع مستند {service}", type=["pdf", "jpg", "png"], key=f"upload_{service}")
-        if uploaded_file:
-            filename = f"{service.lower().replace(' ', '_')}.pdf"
+# الخدمات الخاصة
+for i, (service, icon) in enumerate(special_services):
+    with cols[i % 5]:
+        st.markdown(f"### {icon} {service}")
+        photo = st.camera_input(f"📸 تصوير {service}", key=f"camera_{service}")
+        if photo is not None:
+            filename = f"{service.lower().replace(' ', '_')}.jpg"
             filepath = os.path.join(folder_name, filename)
             with open(filepath, "wb") as f:
-                f.write(uploaded_file.getbuffer())
+                f.write(photo.getbuffer())
             save_document(flight, date, service, filename)
-            st.success(f"تم رفع مستند {service}")
-
-        # View document
-        if service in docs_data:
-            st.info(f"📎 مستند مرفوع: {docs_data[service]}")
+            st.success(f"تم تصوير وحفظ مستند {service} بنجاح")
 
 # -----------------------------
 # Auto refresh
