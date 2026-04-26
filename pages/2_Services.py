@@ -18,7 +18,7 @@ init_db()
 page_bg_img = f"""
 <style>
 [data-testid="stAppViewContainer"] {{
-background-image: url("assets/egyptair_bg.jpg");
+background-image: url("assets/egyptair_bg.jpg.png");
 background-size: cover;
 background-repeat: no-repeat;
 background-attachment: fixed;
