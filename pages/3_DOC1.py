@@ -23,27 +23,38 @@ if flight_number and flight_date:
         else:
             st.warning("⚠️ الرجاء رفع أو تصوير المستند")
 
-    # الأيقونات المطلوبة
-    uploaded_loadsheet = st.file_uploader("📄 Load Sheet", type=["pdf","jpg","png"])
-    if st.button("حفظ Load Sheet"):
-        save_document("load_sheet", uploaded_loadsheet)
+    st.subheader("اختر المستند المطلوب:")
 
-    uploaded_instruction = st.file_uploader("📋 Load Instruction", type=["pdf","jpg","png"])
-    if st.button("حفظ Load Instruction"):
-        save_document("load_instruction", uploaded_instruction)
+    # الصف الأول من الأيقونات
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        uploaded_loadsheet = st.file_uploader("📄 Load Sheet", type=["pdf","jpg","png"])
+        if st.button("حفظ Load Sheet"):
+            save_document("load_sheet", uploaded_loadsheet)
 
-    uploaded_gd = st.file_uploader("🗒️ G.D", type=["pdf","jpg","png"])
-    if st.button("حفظ G.D"):
-        save_document("gd", uploaded_gd)
+    with col2:
+        uploaded_instruction = st.file_uploader("📋 Load Instruction", type=["pdf","jpg","png"])
+        if st.button("حفظ Load Instruction"):
+            save_document("load_instruction", uploaded_instruction)
 
-    uploaded_fuelinfo = st.file_uploader("⛽ Fuel Info", type=["pdf","jpg","png"])
-    if st.button("حفظ Fuel Info"):
-        save_document("fuel_info", uploaded_fuelinfo)
+    with col3:
+        uploaded_gd = st.file_uploader("🗒️ G.D", type=["pdf","jpg","png"])
+        if st.button("حفظ G.D"):
+            save_document("gd", uploaded_gd)
 
-    uploaded_fuelreceived = st.file_uploader("🧾 Fuel Received", type=["pdf","jpg","png"])
-    if st.button("حفظ Fuel Received"):
-        save_document("fuel_received", uploaded_fuelreceived)
+    # الصف الثاني من الأيقونات
+    col4, col5, col6 = st.columns(3)
+    with col4:
+        uploaded_fuelinfo = st.file_uploader("⛽ Fuel Info", type=["pdf","jpg","png"])
+        if st.button("حفظ Fuel Info"):
+            save_document("fuel_info", uploaded_fuelinfo)
 
-    uploaded_report = st.file_uploader("📈 Flight Report", type=["pdf","jpg","png"])
-    if st.button("حفظ Flight Report"):
-        save_document("flight_report", uploaded_report)
+    with col5:
+        uploaded_fuelreceived = st.file_uploader("🧾 Fuel Received", type=["pdf","jpg","png"])
+        if st.button("حفظ Fuel Received"):
+            save_document("fuel_received", uploaded_fuelreceived)
+
+    with col6:
+        uploaded_report = st.file_uploader("📈 Flight Report", type=["pdf","jpg","png"])
+        if st.button("حفظ Flight Report"):
+            save_document("flight_report", uploaded_report)
