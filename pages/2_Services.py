@@ -23,9 +23,22 @@ background-size: cover;
 background-repeat: no-repeat;
 background-attachment: fixed;
 }}
+
+[data-testid="stHeader"] {{
+background: rgba(0,0,0,0);   /* يجعل الهيدر شفاف */
+}}
+
+[data-testid="stSidebar"] {{
+background: rgba(255,255,255,0.8);  /* خلفية شبه شفافة للـ Sidebar */
+}}
+
+[data-testid="stToolbar"] {{
+right: 2rem;  /* يضبط مكان شريط الأدوات */
+}}
 </style>
 """
 st.markdown(page_bg_img, unsafe_allow_html=True)
+
 
 # CSS
 st.markdown("""
