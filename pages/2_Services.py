@@ -2,18 +2,13 @@ import streamlit as st
 import os
 import datetime
 import sys
+
 # ------------------------------
 # FIX IMPORT ERROR ON STREAMLIT CLOUD
 # ------------------------------
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
-
-# -----------------------------
-# FIX IMPORT ERROR ON STREAMLIT CLOUD
-# -----------------------------
-# This ensures Streamlit can find the "modules" folder even when running from /pages/
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from modules.database import save_service, load_services, save_document, load_documents
 
