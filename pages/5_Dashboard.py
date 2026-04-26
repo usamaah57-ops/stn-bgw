@@ -49,4 +49,12 @@ else:
     not_started = sum(1 for s in services.values() if not s.get("start") and not s.get("end"))
 
     st.markdown("### Service Status Summary")
-    col
+    colA, colB, colC, colD = st.columns(4)
+    with colA:
+        st.metric("Total Services", total_services)
+    with colB:
+        st.metric("Completed", completed)
+    with colC:
+        st.metric("In Progress", in_progress)
+    with colD:
+        st.metric("Not Started", not_started)
