@@ -1,22 +1,44 @@
 import streamlit as st
+import os
+import sys
+import datetime
+from fpdf import FPDF   # مكتبة لإنشاء PDF
+
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
 from modules.database import load_archive
 
-st.set_page_config(page_title="Archive", page_icon="📦")
+st.set_page_config(page_title="EgyptAir - Archive", layout="wide")
 
-st.title("📦 Archived Flights")
-st.markdown("---")
+st.markdown("<h2 style='text-align:center;color:#003366;'>Archive – EgyptAir Baghdad Station</h2>", unsafe_allow_html=True)
+st.markdown("<hr>", unsafe_allow_html=True)
 
-records = load_archive()
+# Load archive data
+rows = load_archive()
 
-if not records:
-    st.info("No archived flights yet.")
+if not rows:
+    st.warning("Archive is empty.")
 else:
-    st.subheader("Archived Records")
+    # Show table
+    st.table(rows)
 
-    for r in records:
-        flight, reg, date, key, time, staff = r
+    # Generate PDF
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
 
-        with st.expander(f"{date} — {flight} — {reg}"):
-            st.write(f"**Service:** {key}")
-            st.write(f"**Time:** {time}")
-            st.write(f"**Staff:** {staff}")
+    pdf.cell(200, 10, txt="EgyptAir Baghdad Station Archive", ln=True, align="C")
+    pdf.ln(10)
+
+    for flight, reg, date, service, start, end in rows:
+        pdf.cell(200, 10, txt=f"Flight: {flight} | Reg: {reg} | Date: {date} | Service: {service} | Start: {start} | End: {end}", ln=True)
+
+    # Save PDF to file
+    pdf_file = "archive.pdf"
+    pdf.output(pdf_file)
+
+    # Provide download button
+    with open(pdf_file, "rb") as f:
+        st.download_button("Download Archive PDF", f, file_name="archive.pdf", mime="application/pdf")
