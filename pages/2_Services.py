@@ -52,7 +52,7 @@ st.markdown("<hr style='border:1px solid #003366;'>", unsafe_allow_html=True)
 if st.button("➕ Add New Flight"):
     st.session_state["flight"] = ""
     st.session_state["reg"] = ""
-    st.experimental_rerun()
+    st.rerun()
 
 # Flight Info
 col1, col2, col3 = st.columns([1, 1, 1])
