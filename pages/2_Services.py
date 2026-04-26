@@ -2,6 +2,7 @@ import streamlit as st
 import os
 import datetime
 import sys
+import pytz   # مكتبة للتعامل مع التوقيت المحلي
 
 # -----------------------------------
 # FIX IMPORT ERROR ON STREAMLIT CLOUD
@@ -85,10 +86,8 @@ with col3:
 # -----------------------------------
 services_list = [
     ("CHOCKS_ON", "🟢"),
-    ("AFT_OPEN", "🔓"),
     ("AFT_CLOSE", "🔒"),
     ("FWD_OPEN", "🔓"),
-    ("FWD_CLOSE", "🔒"),
     ("CLEANING", "🧹"),
     ("FUEL", "⛽"),
     ("FIRST_PAX", "👥"),
@@ -100,6 +99,11 @@ services_list = [
 ]
 
 services_data = load_services(flight, date)
+
+# -----------------------------------
+# Baghdad timezone
+# -----------------------------------
+baghdad_tz = pytz.timezone("Asia/Baghdad")
 
 # -----------------------------------
 # Display Services in Grid Layout
@@ -129,25 +133,20 @@ for i, (service, icon) in enumerate(services_list):
             unsafe_allow_html=True
         )
 
-        st.write(f"Arrival (Start): {start_time if start_time else '--'}")
-        st.write(f"End Time: {end_time if end_time else '--'}")
-
-        notes_val = services_data.get(service, {}).get("notes", "--")
-        st.write(f"Notes: {notes_val}")
+        st.write(f"Start: {start_time if start_time else '--'}")
+        st.write(f"End: {end_time if end_time else '--'}")
 
         # Start button
-        if st.button(f"Record Start {service}", key=f"start_{service}"):
-            t = st.time_input(f"Start Time ({service})", datetime.datetime.now().time(), key=f"time_start_{service}")
-            n = st.text_area(f"Notes ({service})", key=f"notes_start_{service}")
-            save_service(flight, reg, date, service, str(t), n, mode="start")
-            st.success(f"Start time recorded for {service}")
+        if st.button(f"Start {service}", key=f"start_{service}"):
+            t = datetime.datetime.now(baghdad_tz).strftime("%H:%M:%S")
+            save_service(flight, reg, date, service, t, "", "start")
+            st.success(f"Start time recorded for {service} at {t} Baghdad time")
 
         # End button
-        if st.button(f"Record End {service}", key=f"end_{service}"):
-            t = st.time_input(f"End Time ({service})", datetime.datetime.now().time(), key=f"time_end_{service}")
-            n = st.text_area(f"Notes ({service})", key=f"notes_end_{service}")
-            save_service(flight, reg, date, service, str(t), n, mode="end")
-            st.success(f"End time recorded for {service}")
+        if st.button(f"End {service}", key=f"end_{service}"):
+            t = datetime.datetime.now(baghdad_tz).strftime("%H:%M:%S")
+            save_service(flight, reg, date, service, t, "", "end")
+            st.success(f"End time recorded for {service} at {t} Baghdad time")
 
 # -----------------------------------
 # Auto Refresh
