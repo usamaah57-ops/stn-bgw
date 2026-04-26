@@ -47,3 +47,26 @@ else:
     # محتوى الجدول مع ألوان
     pdf.set_font("Arial", size=9)
     for flight, reg, date, service, start, end in rows:
+        # تحديد اللون حسب الحالة
+        if start and end:
+            pdf.set_fill_color(144, 238, 144)  # أخضر فاتح
+        elif start and not end:
+            pdf.set_fill_color(255, 255, 153)  # أصفر فاتح
+        else:
+            pdf.set_fill_color(255, 182, 193)  # أحمر فاتح
+
+        pdf.cell(col_widths[0], 8, str(flight), border=1, fill=True)
+        pdf.cell(col_widths[1], 8, str(reg), border=1, fill=True)
+        pdf.cell(col_widths[2], 8, str(date), border=1, fill=True)
+        pdf.cell(col_widths[3], 8, str(service), border=1, fill=True)
+        pdf.cell(col_widths[4], 8, str(start) if start else "--", border=1, fill=True)
+        pdf.cell(col_widths[5], 8, str(end) if end else "--", border=1, fill=True)
+        pdf.ln()
+
+    # Save PDF to file
+    pdf_file = "archive.pdf"
+    pdf.output(pdf_file)
+
+    # Provide download button
+    with open(pdf_file, "rb") as f:
+        st.download_button("Download Archive PDF", f, file_name="archive.pdf", mime="application/pdf")
