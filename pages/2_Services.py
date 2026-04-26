@@ -1,6 +1,14 @@
 import streamlit as st
 import os
 import datetime
+import sys
+
+# -----------------------------
+# FIX IMPORT ERROR ON STREAMLIT CLOUD
+# -----------------------------
+# This ensures Streamlit can find the "modules" folder even when running from /pages/
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from modules.database import save_service, load_services, save_document, load_documents
 
 st.set_page_config(page_title="EgyptAir - Baghdad Station Services", layout="wide")
@@ -92,4 +100,3 @@ for i, (service, icon) in enumerate(services_list):
 # -----------------------------
 st.markdown("<hr>", unsafe_allow_html=True)
 st.markdown("<p style='text-align:center;color:gray;'>تحديث تلقائي كل 10 ثواني</p>", unsafe_allow_html=True)
-st_autorefresh = st.experimental_rerun
